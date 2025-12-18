@@ -9,9 +9,15 @@ license = {text = "Apache License"}
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
+    "ollama (>=0.6.1,<0.7.0)"
 ]
 
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+dev = [
+    "isort (>=7.0.0,<8.0.0)"
+]
