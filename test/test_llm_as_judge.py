@@ -8,11 +8,11 @@ from main.llm_as_judge import (
     MainTopicExtractor,
     Reference,
     ReferenceBasedCorrectnessJudge,
-    Report,
     Statement,
     Topic,
     TopicBasedCompletenessJudge,
 )
+from main.report import Report
 
 
 class TestJudgement(unittest.TestCase):

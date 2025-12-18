@@ -4,6 +4,10 @@ from pprint import pprint
 
 from pydantic import BaseModel
 
+__all__ = [
+    "Document",
+]
+
 
 class Document(BaseModel):
     content: str

@@ -2,6 +2,10 @@
 
 from pydantic import BaseModel, Field
 
+__all__ = [
+    "Report",
+]
+
 
 class Report(BaseModel):
     """summarization report"""
