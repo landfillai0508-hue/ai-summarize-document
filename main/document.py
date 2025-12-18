@@ -1,6 +1,7 @@
 """document module."""
 
 from pprint import pprint
+
 from pydantic import BaseModel
 
 
