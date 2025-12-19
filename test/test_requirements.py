@@ -1,3 +1,4 @@
+import asyncio
 import unittest
 
 from main.document import Document
@@ -80,7 +81,7 @@ class TestDoubleNewlineDelimiterRequirement(unittest.TestCase):
     def test_description(self) -> None:
         self.assertEqual(
             self.requirement.description,
-            ("Use \n\n as the delimiter to separate paragraphs;"),
+            ('Use "\n\n" as the delimiter to separate paragraphs;'),
         )
 
     def test_must_be_satisfied(self) -> None:
@@ -108,7 +109,7 @@ class TestNumberOfParagraphRequirement(unittest.TestCase):
     def test_description(self) -> None:
         self.assertEqual(
             self.requirement.description,
-            (f"Summarization report should have 2 to 5 paragraphs in total;"),
+            ("Summarization report should have 2 to 5 paragraphs in total;"),
         )
 
     def test_must_be_satisfied(self) -> None:
@@ -181,7 +182,7 @@ class TestCorrectnessRequirement(unittest.TestCase):
         self.assertTrue(self.requirement.must_be_satisfied())
 
     def test_is_satisfied(self) -> None:
-        self.assertTrue(self.requirement.is_satisfied(report=self.report))
+        self.assertTrue(asyncio.run(self.requirement.is_satisfied(report=self.report)))
 
 
 class TestCompletenessRequirement(unittest.TestCase):
@@ -219,4 +220,8 @@ class TestCompletenessRequirement(unittest.TestCase):
         self.assertTrue(self.requirement.must_be_satisfied())
 
     def test_is_satisfied(self) -> None:
-        self.assertTrue(self.requirement.is_satisfied(report=self.report))
+        self.assertTrue(asyncio.run(self.requirement.is_satisfied(report=self.report)))
+
+
+if __name__ == "__main__":
+    unittest.main()

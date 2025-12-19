@@ -1,3 +1,4 @@
+import asyncio
 import unittest
 
 from main.llm_as_judge import Reference
@@ -122,7 +123,9 @@ class TestCorrectnessMetricExtractor(unittest.TestCase):
         self.metric_extractor = CorrectnessMetricExtractor(reference=self.reference)
 
     def test_extract(self) -> None:
-        correctness_metric = self.metric_extractor.extract(report=self.report)
+        correctness_metric = asyncio.run(
+            self.metric_extractor.extract(report=self.report)
+        )
         self.assertEqual(correctness_metric.name, "Correctness-Metric")
         self.assertTrue(bool(int(correctness_metric.value)))
 
@@ -149,6 +152,12 @@ class TestCompletenessMetricExtractor(unittest.TestCase):
         self.metric_extractor = CompletenessMetricExtractor(reference=self.reference)
 
     def test_extract(self) -> None:
-        completeness_metric = self.metric_extractor.extract(report=self.report)
+        completeness_metric = asyncio.run(
+            self.metric_extractor.extract(report=self.report)
+        )
         self.assertEqual(completeness_metric.name, "Completeness-Metric")
         self.assertTrue(bool(int(completeness_metric.value)))
+
+
+if __name__ == "__main__":
+    unittest.main()

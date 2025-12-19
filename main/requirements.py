@@ -118,9 +118,7 @@ class DoubleNewlineDelimiterRequirement(Requirement):
         super().__init__()
         self._name = "Double-Newline-As-Paragraph-Delimiter-Requirement"
         self._paragraph_delimiter = "\n\n"
-        self._description = (
-            f"Use {self._paragraph_delimiter} as the delimiter to separate paragraphs;"
-        )
+        self._description = f'Use "{self._paragraph_delimiter}" as the delimiter to separate paragraphs;'
 
     @property
     def name(self) -> str:
@@ -235,8 +233,8 @@ class CorrectnessRequirement(Requirement):
     def description(self) -> str:
         return self._description
 
-    def is_satisfied(self, report: Report) -> bool:
-        metric = self._metric_extractor.extract(report)
+    async def is_satisfied(self, report: Report) -> bool:
+        metric = await self._metric_extractor.extract(report)
         is_correct = bool(int(metric.value))
         return is_correct
 
@@ -261,8 +259,8 @@ class CompletenessRequirement(Requirement):
     def description(self) -> str:
         return self._description
 
-    def is_satisfied(self, report: Report) -> bool:
-        metric = self._metric_extractor.extract(report)
+    async def is_satisfied(self, report: Report) -> bool:
+        metric = await self._metric_extractor.extract(report)
         is_correct = bool(int(metric.value))
         return is_correct
 
