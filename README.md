@@ -1,8 +1,8 @@
 
 ```markdown
-# A Customized Summarizer for Summarizing Documents into Summarization Reports
+# A Customized Document Summarizer
 
-An AI agent that summarizes security incidents using structured logs and LLMs to reduce investigation time.
+A customized summarizer implemented on top of LLMs.
 
 ## Overview
 This project implements a production-oriented AI agent that analyzes security logs, extracts key signals, and generates concise incident summaries for SOC analysts.
