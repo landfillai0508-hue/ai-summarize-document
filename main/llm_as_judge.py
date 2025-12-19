@@ -88,7 +88,7 @@ class MainTopicExtractor:
     def __init__(self):
         self._ollama_client = AsyncClient()
         self._prompt_template = Template(
-            "Extract the main idea of the following document:" "\n" "    $document"
+            ("Extract the main idea of the following document:" "\n" "    $document")
         )
 
     async def run(self, document: Document) -> Topic:

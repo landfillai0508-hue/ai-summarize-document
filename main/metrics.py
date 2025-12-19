@@ -3,7 +3,6 @@
 import asyncio
 from abc import ABC, abstractmethod
 from functools import partial
-from typing import List
 
 from main.document import Document
 from main.llm_as_judge import (
@@ -98,15 +97,15 @@ class CorrectnessMetricExtractor(MetricExtractor):
     def __init__(self, reference: Reference):
         self._judge = partial(ReferenceBasedCorrectnessJudge().run, reference=reference)
 
-    def extract(self, report: Report) -> Metric:
+    async def extract(self, report: Report) -> Metric:
         statements = [
             Statement(content=statement.strip())
             for statement in report.content.split(".")
             if statement.strip()
         ]
-        judgements: List[Judgement] = [
-            asyncio.run(self._judge(statement=statement)) for statement in statements
-        ]
+        judgements = await asyncio.gather(
+            *[self._judge(statement=statement) for statement in statements]
+        )
         is_all_statement_true: bool = all(
             judgement.decision for judgement in judgements
         )
@@ -121,12 +120,10 @@ class CompletenessMetricExtractor(MetricExtractor):
         self._main_idea_extractor = MainTopicExtractor()
         self._judge = TopicBasedCompletenessJudge()
 
-    def extract(self, report: Report) -> Metric:
-        main_topic = asyncio.run(
-            self._main_idea_extractor.run(
-                document=Document(content=self._reference.content)
-            )
+    async def extract(self, report: Report) -> Metric:
+        main_topic = await self._main_idea_extractor.run(
+            document=Document(content=self._reference.content)
         )
-        judgement = asyncio.run(self._judge.run(topic=main_topic, report=report))
+        judgement = await self._judge.run(topic=main_topic, report=report)
         value = str(int(judgement.decision))
         return Metric(name="Completeness-Metric", value=value)
