@@ -1,7 +1,6 @@
 
 ```markdown
 # A Customized Reliable Document Summarizer
-
 An agentic workflow was designed and implemented for summarizing documents to reports accurately.
 
 ## Overview
