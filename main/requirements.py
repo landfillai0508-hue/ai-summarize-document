@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 from main.document import Document
 from main.llm_as_judge import Reference
 from main.metrics import (
+    Metric,
     CompletenessMetricExtractor,
     CorrectnessMetricExtractor,
     HasTitleMetricExtractor,
@@ -44,6 +45,9 @@ class Requirement(ABC):
     def must_be_satisfied(self) -> bool:
         pass
 
+    def get_metric(self, report: Report) -> Metric:
+        pass
+
 
 class HasTitleRequirement(Requirement):
 
@@ -72,14 +76,19 @@ class HasTitleRequirement(Requirement):
     def must_be_satisfied(self) -> bool:
         return self._must_be_satisfied
 
+    def get_metric(self,
+                   report: Report) -> Metric:
+        metric = self._metric_extractor.extract(report)
+        return metric
+
 
 class TitleLengthRequirement(Requirement):
 
     def __init__(
-        self,
-        min_num_of_char: int,
-        max_num_of_char: int,
-        must_be_satisfied: bool = False,
+            self,
+            min_num_of_char: int,
+            max_num_of_char: int,
+            must_be_satisfied: bool = False,
     ):
         super().__init__()
         self._min_num_of_char = min_num_of_char
@@ -104,12 +113,17 @@ class TitleLengthRequirement(Requirement):
         metric = self._metric_extractor.extract(report)
         num_of_char_in_title = int(metric.value)
         is_title_length_proper = (
-            self._min_num_of_char <= num_of_char_in_title <= self._max_num_of_char
+                self._min_num_of_char <= num_of_char_in_title <= self._max_num_of_char
         )
         return is_title_length_proper
 
     def must_be_satisfied(self) -> bool:
         return self._must_be_satisfied
+
+    def get_metric(self,
+                   report: Report) -> Metric:
+        metric = self._metric_extractor.extract(report)
+        return metric
 
 
 class DoubleNewlineDelimiterRequirement(Requirement):
@@ -134,14 +148,19 @@ class DoubleNewlineDelimiterRequirement(Requirement):
     def must_be_satisfied(self) -> bool:
         return False
 
+    def get_metric(self,
+                   report: Report) -> Metric:
+        metric = Metric(name='Dummy', value='0')
+        return metric
+
 
 class NumberOfParagraphRequirement(Requirement):
 
     def __init__(
-        self,
-        min_num_of_paragraph: int,
-        max_num_of_paragraph: int,
-        must_be_satisfied: bool = False,
+            self,
+            min_num_of_paragraph: int,
+            max_num_of_paragraph: int,
+            must_be_satisfied: bool = False,
     ):
         super().__init__()
         self._min_num_of_paragraph = min_num_of_paragraph
@@ -166,21 +185,26 @@ class NumberOfParagraphRequirement(Requirement):
         metric = self._metric_extractor.extract(report)
         num_of_paragraph = int(metric.value)
         has_proper_num_of_paragraph = (
-            self._min_num_of_paragraph <= num_of_paragraph <= self._max_num_of_paragraph
+                self._min_num_of_paragraph <= num_of_paragraph <= self._max_num_of_paragraph
         )
         return has_proper_num_of_paragraph
 
     def must_be_satisfied(self) -> bool:
         return self._must_be_satisfied
 
+    def get_metric(self,
+                   report: Report) -> Metric:
+        metric = self._metric_extractor.extract(report)
+        return metric
+
 
 class NumberOfTokenRequirement(Requirement):
 
     def __init__(
-        self,
-        min_num_of_token: int,
-        max_num_of_token: int,
-        must_be_satisfied: bool = False,
+            self,
+            min_num_of_token: int,
+            max_num_of_token: int,
+            must_be_satisfied: bool = False,
     ):
         super().__init__()
         self._min_num_of_token = min_num_of_token
@@ -205,12 +229,17 @@ class NumberOfTokenRequirement(Requirement):
         metric = self._metric_extractor.extract(report)
         num_of_token = int(metric.value)
         has_proper_num_of_token = (
-            self._min_num_of_token <= num_of_token <= self._max_num_of_token
+                self._min_num_of_token <= num_of_token <= self._max_num_of_token
         )
         return has_proper_num_of_token
 
     def must_be_satisfied(self) -> bool:
         return self._must_be_satisfied
+
+    def get_metric(self,
+                   report: Report) -> Metric:
+        metric = self._metric_extractor.extract(report)
+        return metric
 
 
 class CorrectnessRequirement(Requirement):
@@ -241,6 +270,11 @@ class CorrectnessRequirement(Requirement):
     def must_be_satisfied(self) -> bool:
         return self._must_be_satisfied
 
+    async def get_metric(self,
+                         report: Report) -> Metric:
+        metric = await self._metric_extractor.extract(report)
+        return metric
+
 
 class CompletenessRequirement(Requirement):
 
@@ -266,3 +300,8 @@ class CompletenessRequirement(Requirement):
 
     def must_be_satisfied(self) -> bool:
         return self._must_be_satisfied
+
+    async def get_metric(self,
+                         report: Report) -> Metric:
+        metric = await self._metric_extractor.extract(report)
+        return metric

@@ -1,13 +1,10 @@
 """summarize document."""
 
-import pprint
+import inspect
 from abc import ABC, abstractmethod
-from concurrent import futures
 from string import Template
-from typing import List
-
+from collections import defaultdict
 from ollama import AsyncClient
-
 from main.customized_exceptions import (
     LargeLanguageAPIError,
     NoReportSatisfyAllMustRequirements,
@@ -43,34 +40,9 @@ class BestHitLLMSummarizer(AbstractSummarizer):
         "    $requirements"
     )
 
-    def __init__(self, num_tries: int = 10):
+    def __init__(self, num_tries: int = 3):
         self._num_tries = num_tries
         self._ollama_client = AsyncClient()
-
-    """
-    @staticmethod
-    def select_the_best_candidate_report(candidate_reports: List[ReportWithMetrics],
-                                         details_logger: ExplanationLogger = ExplanationLogger()) -> Report:
-        # Select reports which have maximal number of alert groups
-        max_num_of_alert_groups = max(report.num_of_alert_groups for report in candidate_reports)
-        reports_which_have_max_alert_groups = [report for report in candidate_reports
-                                               if report.num_of_alert_groups == max_num_of_alert_groups]
-
-        # Prefer reports which do not have summary paragraphs
-        has_any_report_no_summary = any(
-            report.no_summary_paragraph for report in reports_which_have_max_alert_groups
-        )
-        reports_with_best_no_summary = [report for report in reports_which_have_max_alert_groups
-                                        if report.no_summary_paragraph == has_any_report_no_summary]
-
-        # Prefer the report which has the least tokens / words
-        reports_sorted_by_num_of_tokens = sorted(reports_with_best_no_summary, key=lambda x: x.num_of_tokens)
-
-        excluded_reports = [report for report in candidate_reports if report not in reports_sorted_by_num_of_tokens]
-        details_logger.log_matching_reports(reports_sorted_by_num_of_tokens, excluded_reports)
-
-        return reports_sorted_by_num_of_tokens[0].report
-    """
 
     async def summarize(self, document: Document) -> Report:
         # Define requirements which should be satisfied
@@ -117,38 +89,37 @@ class BestHitLLMSummarizer(AbstractSummarizer):
         reports = []
         for iter in range(self._num_tries):
             print(f"Summarize at iteration {iter}")
-            response = await self._ollama_client.chat(
-                model="deepseek-r1:8b",
-                messages=messages,
-                format=Report.model_json_schema(),
-            )
-
-            report = Report.model_validate_json(response.message.content)
-            reports.append(report)
+            try:
+                response = await self._ollama_client.chat(
+                    model="deepseek-r1:8b",
+                    messages=messages,
+                    format=Report.model_json_schema(),
+                )
+            except Exception as _:
+                pass
+            else:
+                report = Report.model_validate_json(response.message.content)
+                reports.append(report)
 
         valid_reports = []
         for report in reports:
-            satisfy_all_must_requirements = all(
-                req.is_satisfied(report) for req in must_be_satisfied_requirements
-            )
+            satisfy_all_must_requirements = []
+            for req in must_be_satisfied_requirements:
+                if inspect.iscoroutinefunction(req.is_satisfied):
+                    satisfy_all_must_requirements.append(await req.is_satisfied(report))
+                else:
+                    satisfy_all_must_requirements.append(req.is_satisfied(report))
+
             if satisfy_all_must_requirements:
                 valid_reports.append(report)
 
-        print(f"Number of valid reports: {len(valid_reports)}")
-
-        return reports[0]
-
-        """
-        if not has_successful_return_from_llm:
+        if not reports:
             raise LargeLanguageAPIError()
 
-        if not reports_satisfy_must_with_metrics:
+        if not valid_reports:
             raise NoReportSatisfyAllMustRequirements()
 
-        best_report = BestHitChatGPTSummarizer.select_the_best_candidate_report(reports_satisfy_must_with_metrics,
-                                                                                self._explanation_logger)
-        return best_report
-        """
+        return valid_reports[0]
 
 
 if __name__ == "__main__":
