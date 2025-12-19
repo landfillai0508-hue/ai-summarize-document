@@ -10,9 +10,9 @@ This project implements a production-oriented AI agent that analyzes security lo
 The system is designed for **reliability and traceability**, with clear separation between data processing, model inference, and post-processing.
 
 ## Key Features
-- Dynamic Prompting 
-- LLM-based summarization with prompt templates
-- Deterministic output validation
+- Structured Prompt which includes (1) Instructions; (2) Context; (3) Requirements 
+- Requirements are coupled with metrics and metric extractors for quantifing the validity and the quality of a summarization report
+- LLM_as_judge for extracting both accuracy metric and completeness metric
 - Extensible agent workflow
 
 ## Tech Stack
@@ -20,5 +20,3 @@ The system is designed for **reliability and traceability**, with clear separati
 - Large Language Models (configurable)
 
 ## Running
-```bash
-python main.py --input sample_logs.json
