@@ -17,5 +17,7 @@ The system is designed for **reliability and traceability**. A comprehensive eva
 ## Tech Stack
 - Python
 - Large Language Models (configurable)
+- Ollama
+- LLM-as-judge
 
 ## Running
