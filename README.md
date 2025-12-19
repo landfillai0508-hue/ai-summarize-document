@@ -1,13 +1,13 @@
 
 ```markdown
-# A Customized Document Summarizer
+# A Customized Reliable Document Summarizer
 
-A customized summarizer implemented on top of LLMs.
+An agentic workflow was designed and implemented for summarizing documents to reports accurately.
 
 ## Overview
-This project implements a production-oriented AI agent that analyzes security logs, extracts key signals, and generates concise incident summaries for SOC analysts.
+This project implements a production-oriented AI agent that summarizes documents into reports.
 
-The system is designed for **reliability and traceability**, with clear separation between data processing, model inference, and post-processing.
+The system is designed for **reliability and traceability**. A comprehensive evaluation framework is implemented for guarantteeing its reliability.
 
 ## Key Features
 - Structured Prompt which includes (1) Instructions; (2) Context; (3) Requirements 
