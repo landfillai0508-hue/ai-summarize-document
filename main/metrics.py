@@ -100,7 +100,9 @@ class CorrectnessMetricExtractor(MetricExtractor):
     async def extract(self, report: Report) -> Metric:
         statements = [
             Statement(content=statement.strip())
-            for statement in report.content.split("\n\n")  # NOTE: each paragraph is treated as a statement
+            for statement in report.content.split(
+                "\n\n"
+            )  # NOTE: each paragraph is treated as a statement
             if statement.strip()
         ]
         judgements = await asyncio.gather(

@@ -3,8 +3,9 @@
 import inspect
 from abc import ABC, abstractmethod
 from string import Template
-from collections import defaultdict
+
 from ollama import AsyncClient
+
 from main.customized_exceptions import (
     LargeLanguageAPIError,
     NoReportSatisfyAllMustRequirements,
@@ -87,8 +88,8 @@ class BestHitLLMSummarizer(AbstractSummarizer):
 
         # Query LLM API
         reports = []
-        for iter in range(self._num_tries):
-            print(f"Summarize at iteration {iter}")
+        for iteration in range(self._num_tries):
+            print(f"Summarize at iteration {iteration}")
             try:
                 response = await self._ollama_client.chat(
                     model="deepseek-r1:8b",
@@ -120,13 +121,3 @@ class BestHitLLMSummarizer(AbstractSummarizer):
             raise NoReportSatisfyAllMustRequirements()
 
         return valid_reports[0]
-
-
-if __name__ == "__main__":
-    import asyncio
-
-    input_local_path_ = "../data/article.txt"
-    document_ = Document.load_from_local(input_file_path=input_local_path_)
-    best_hit_llm_summarizer_ = BestHitLLMSummarizer()
-    report_ = asyncio.run(best_hit_llm_summarizer_.summarize(document=document_))
-    print(report_)
