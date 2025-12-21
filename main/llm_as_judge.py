@@ -49,9 +49,7 @@ class ReferenceBasedCorrectnessJudge(ReferenceBasedJudge):
     _env = Environment(loader=FileSystemLoader("prompts/templates"))
     _prompt_template_file = "judge_statement_correctness_template.j2"
 
-    def __init__(self,
-                 client: AsyncOpenAI,
-                 model: str):
+    def __init__(self, client: AsyncOpenAI, model: str):
         self._llm_api_client = client
         self._model = model
         self._prompt_template = ReferenceBasedCorrectnessJudge._env.get_template(
@@ -87,9 +85,7 @@ class MainTopicExtractor:
     _env = Environment(loader=FileSystemLoader("prompts/templates"))
     _prompt_template_file = "extract_main_topic_template.j2"
 
-    def __init__(self,
-                 client: AsyncOpenAI,
-                 model: str):
+    def __init__(self, client: AsyncOpenAI, model: str):
         self._llm_api_client = client
         self._model = model
         self._prompt_template = MainTopicExtractor._env.get_template(
@@ -127,9 +123,7 @@ class TopicBasedCompletenessJudge(TopicBasedJudge):
     _env = Environment(loader=FileSystemLoader("prompts/templates"))
     _prompt_template_file = "judge_report_completeness_template.j2"
 
-    def __init__(self,
-                 client: AsyncOpenAI,
-                 model: str):
+    def __init__(self, client: AsyncOpenAI, model: str):
         self._llm_api_client = client
         self._model = model
         self._prompt_template = TopicBasedCompletenessJudge._env.get_template(

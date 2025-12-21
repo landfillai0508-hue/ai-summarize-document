@@ -4,8 +4,8 @@ import asyncio
 from abc import ABC, abstractmethod
 from functools import partial
 
-from openai import AsyncOpenAI
 from bert_score import BERTScorer
+from openai import AsyncOpenAI
 from rouge_score.rouge_scorer import RougeScorer
 from transformers import BertForMaskedLM, BertModel, BertTokenizer
 
@@ -124,12 +124,11 @@ class NumberOfTokenMetricExtractor(MetricExtractor):
 
 
 class CorrectnessMetricExtractor(MetricExtractor):
-    def __init__(self,
-                 client: AsyncOpenAI,
-                 model: str,
-                 reference: Reference):
-        self._judge = partial(ReferenceBasedCorrectnessJudge(client=client, model=model).run,
-                              reference=reference)
+    def __init__(self, client: AsyncOpenAI, model: str, reference: Reference):
+        self._judge = partial(
+            ReferenceBasedCorrectnessJudge(client=client, model=model).run,
+            reference=reference,
+        )
 
     async def extract(self, report: Report) -> Metric:
         statements = [
@@ -151,10 +150,7 @@ class CorrectnessMetricExtractor(MetricExtractor):
 
 class CompletenessMetricExtractor(MetricExtractor):
 
-    def __init__(self,
-                 client: AsyncOpenAI,
-                 model: str,
-                 reference: Reference):
+    def __init__(self, client: AsyncOpenAI, model: str, reference: Reference):
         self._reference = reference
         self._main_idea_extractor = MainTopicExtractor(client=client, model=model)
         self._judge = TopicBasedCompletenessJudge(client=client, model=model)
