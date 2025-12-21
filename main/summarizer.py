@@ -11,6 +11,8 @@ from main.customized_exceptions import (
     NoReportSatisfyAllMustRequirements,
 )
 from main.document import Document
+from main.llm_as_judge import Reference
+from main.metrics import BertScoreMetricExtractor, RougeScoreMetricExtractor
 from main.report import Report
 from main.requirements import (
     CompletenessRequirement,
@@ -34,8 +36,9 @@ class BestHitLLMSummarizer(AbstractSummarizer):
     _env = Environment(loader=FileSystemLoader("prompts/templates"))
     _prompt_template_file = "summarize_document_template.j2"
 
-    def __init__(self, num_tries: int = 3):
+    def __init__(self, num_tries: int = 10, llm_as_judge: bool = False):
         self._num_tries = num_tries
+        self._llm_as_judge = llm_as_judge
         self._ollama_client = AsyncClient()
         self._prompt_template = BestHitLLMSummarizer._env.get_template(
             BestHitLLMSummarizer._prompt_template_file
@@ -55,9 +58,25 @@ class BestHitLLMSummarizer(AbstractSummarizer):
             NumberOfTokenRequirement(
                 min_num_of_token=100, max_num_of_token=250, must_be_satisfied=True
             ),
-            CorrectnessRequirement(org_document=document, must_be_satisfied=True),
-            CompletenessRequirement(org_document=document, must_be_satisfied=True),
         ]
+
+        if self._llm_as_judge:
+            all_requirements.extend(
+                [
+                    CorrectnessRequirement(
+                        org_document=document, must_be_satisfied=True
+                    ),
+                    CompletenessRequirement(
+                        org_document=document, must_be_satisfied=True
+                    ),
+                ]
+            )
+
+        scorers = [
+            BertScoreMetricExtractor(reference=Reference(content=document.content)),
+            RougeScoreMetricExtractor(reference=Reference(content=document.content)),
+        ]
+
         must_be_satisfied_requirements = [
             req for req in all_requirements if req.must_be_satisfied()
         ]
@@ -113,4 +132,16 @@ class BestHitLLMSummarizer(AbstractSummarizer):
         if not valid_reports:
             raise NoReportSatisfyAllMustRequirements()
 
-        return valid_reports[0]
+        best_report_id = -1
+        best_report_score = 0
+        for idx, report in enumerate(valid_reports):
+            scores = []
+            for scorer in scorers:
+                score = scorer.extract(report=report)
+                scores.append(float(score.value))
+
+            cur_report_score = sum(scores)  # sum scores of all scorers
+            if cur_report_score > best_report_score:
+                best_report_id = idx
+
+        return valid_reports[best_report_id]

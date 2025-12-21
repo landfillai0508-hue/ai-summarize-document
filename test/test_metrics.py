@@ -2,17 +2,13 @@ import asyncio
 import unittest
 
 from main.llm_as_judge import Reference
-from main.metrics import (
-    BertScoreMetricExtractor,
-    CompletenessMetricExtractor,
-    CorrectnessMetricExtractor,
-    HasTitleMetricExtractor,
-    Metric,
-    NumberOfParagraphMetricExtractor,
-    NumberOfTokenMetricExtractor,
-    RougeScoreMetricExtractor,
-    TitleLengthMetricExtractor,
-)
+from main.metrics import (BertScoreMetricExtractor,
+                          CompletenessMetricExtractor,
+                          CorrectnessMetricExtractor, HasTitleMetricExtractor,
+                          Metric, NumberOfParagraphMetricExtractor,
+                          NumberOfTokenMetricExtractor,
+                          RougeScoreMetricExtractor,
+                          TitleLengthMetricExtractor)
 from main.report import Report
 
 
