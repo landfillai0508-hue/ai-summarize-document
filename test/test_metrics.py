@@ -3,15 +3,15 @@ import unittest
 
 from main.llm_as_judge import Reference
 from main.metrics import (
+    BertScoreMetricExtractor,
     CompletenessMetricExtractor,
     CorrectnessMetricExtractor,
     HasTitleMetricExtractor,
     Metric,
     NumberOfParagraphMetricExtractor,
     NumberOfTokenMetricExtractor,
-    TitleLengthMetricExtractor,
-    BertScoreMetricExtractor,
     RougeScoreMetricExtractor,
+    TitleLengthMetricExtractor,
 )
 from main.report import Report
 
@@ -80,8 +80,8 @@ class TestNumberOfParagraphMetricExtractor(unittest.TestCase):
         self.report = Report(
             title="UCLA",
             content="UCLA is a public university at Los Angeles.\n\n"
-                    "UCLA is a large research university located, known for its strong academics, "
-                    "successful athletics (now in the Big Ten), and significant impact on society.",
+            "UCLA is a large research university located, known for its strong academics, "
+            "successful athletics (now in the Big Ten), and significant impact on society.",
         )
 
         self.metric_extractor = NumberOfParagraphMetricExtractor()
@@ -115,7 +115,7 @@ class TestBertScoreMetricExtractor(unittest.TestCase):
         )
         self.reference = Reference(
             content="UCLA, the University of California, Los Angeles, is a prestigious public research university, "
-                    "known globally for top-tier academics, extensive research. It locates in Westwood, Los Angeles."
+            "known globally for top-tier academics, extensive research. It locates in Westwood, Los Angeles."
         )
         self.metric_extractor = BertScoreMetricExtractor(reference=self.reference)
 
@@ -125,6 +125,7 @@ class TestBertScoreMetricExtractor(unittest.TestCase):
         score = float(metric.value)
         self.assertGreater(score, 0.6)
 
+
 class TestRougeScoreMetricExtractor(unittest.TestCase):
 
     def setUp(self):
@@ -133,7 +134,7 @@ class TestRougeScoreMetricExtractor(unittest.TestCase):
         )
         self.reference = Reference(
             content="UCLA, the University of California, Los Angeles, is a prestigious public research university, "
-                    "known globally for top-tier academics, extensive research. It locates in Westwood, Los Angeles."
+            "known globally for top-tier academics, extensive research. It locates in Westwood, Los Angeles."
         )
         self.metric_extractor = RougeScoreMetricExtractor(reference=self.reference)
 
