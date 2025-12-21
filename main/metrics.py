@@ -3,9 +3,10 @@
 import asyncio
 from abc import ABC, abstractmethod
 from functools import partial
-from transformers import BertTokenizer, BertForMaskedLM, BertModel
+
 from bert_score import BERTScorer
 from rouge_score.rouge_scorer import RougeScorer
+from transformers import BertForMaskedLM, BertModel, BertTokenizer
 
 from main.document import Document
 from main.llm_as_judge import (
@@ -77,9 +78,8 @@ class BertScoreMetricExtractor(MetricExtractor):
         self._reference = reference
 
     def extract(self, report: Report) -> Metric:
-        scorer = BERTScorer(model_type='bert-base-uncased')
-        _, _, f1 = scorer.score(cands=[report.content],
-                                refs=[self._reference.content])
+        scorer = BERTScorer(model_type="bert-base-uncased")
+        _, _, f1 = scorer.score(cands=[report.content], refs=[self._reference.content])
         value = str(f1.mean().item())
         return Metric(name="Bert-Score-Metric", value=value)
 
@@ -89,10 +89,11 @@ class RougeScoreMetricExtractor(MetricExtractor):
         self._reference = reference
 
     def extract(self, report: Report) -> Metric:
-        scorer = RougeScorer(rouge_types=['rouge1', 'rouge2', 'rougeL'], use_stemmer=True)
-        scores = scorer.score(target=self._reference.content,
-                              prediction=report.content)
-        value = str(scores['rougeL'].precision)  # Precision is used here.
+        scorer = RougeScorer(
+            rouge_types=["rouge1", "rouge2", "rougeL"], use_stemmer=True
+        )
+        scores = scorer.score(target=self._reference.content, prediction=report.content)
+        value = str(scores["rougeL"].precision)  # Precision is used here.
         return Metric(name="Rouge-Score-Metric", value=value)
 
 
