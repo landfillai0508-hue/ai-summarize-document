@@ -11,14 +11,29 @@ from main.summarizer import BestHitLLMSummarizer
 class TestBestHitLLMSummarizer(unittest.TestCase):
 
     def setUp(self):
-        # Point the client to your local Ollama instance
-        client = AsyncOpenAI(base_url="http://localhost:11434/v1", api_key="dummy_key")
+        input_file_path = os.path.join("data", "article.txt")
+        self.document = Document.load_from_local(input_file_path=input_file_path)
+
+    def test_open_sourced_deepseek_summarize(self):
+        deepseek_client = AsyncOpenAI(
+            base_url="http://localhost:11434/v1", api_key="dummy_key"
+        )
+        model = "deepseek-r1:8b"
         self._summarizer = BestHitLLMSummarizer(
-            client=client, model="deepseek-r1:8b", llm_as_judge=True
+            client=deepseek_client, model=model, llm_as_judge=False
         )
 
-    def test_summarize(self):
-        input_file_path = os.path.join("data", "article.txt")
-        document = Document.load_from_local(input_file_path=input_file_path)
-        report = asyncio.run(self._summarizer.summarize(document=document))
+        report = asyncio.run(self._summarizer.summarize(document=self.document))
+        print(report)
+
+    def test_open_sourced_qwen_summarize(self):
+        deepseek_client = AsyncOpenAI(
+            base_url="http://localhost:11434/v1", api_key="dummy_key"
+        )
+        model = "qwen3-vl:8b"
+        self._summarizer = BestHitLLMSummarizer(
+            client=deepseek_client, model=model, llm_as_judge=False
+        )
+
+        report = asyncio.run(self._summarizer.summarize(document=self.document))
         print(report)
