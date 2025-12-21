@@ -1,8 +1,8 @@
 """llm_as_judge."""
 
 from abc import ABC, abstractmethod
-from string import Template
 
+from jinja2 import Environment, FileSystemLoader
 from ollama import AsyncClient
 from pydantic import BaseModel, Field
 
@@ -46,20 +46,17 @@ class ReferenceBasedJudge(ABC):
 class ReferenceBasedCorrectnessJudge(ReferenceBasedJudge):
     """Judge if a statement is True or False by a given reference."""
 
+    _env = Environment(loader=FileSystemLoader("prompts/templates"))
+    _prompt_template_file = "judge_statement_correctness_template.j2"
+
     def __init__(self):
         self._ollama_client = AsyncClient()
-        self._prompt_template = Template(
-            "Read the document as reference:"
-            "\n"
-            "    $document"
-            "\n\n"
-            "Judge if the following statement is True or False:"
-            "\n"
-            "    $statement"
+        self._prompt_template = ReferenceBasedCorrectnessJudge._env.get_template(
+            ReferenceBasedCorrectnessJudge._prompt_template_file
         )
 
     async def run(self, statement: Statement, reference: Reference) -> Judgement:
-        prompt = self._prompt_template.substitute(
+        prompt = self._prompt_template.render(
             {
                 "statement": statement.content,
                 "document": reference.content,
@@ -84,15 +81,17 @@ class Topic(BaseModel):
 
 
 class MainTopicExtractor:
+    _env = Environment(loader=FileSystemLoader("prompts/templates"))
+    _prompt_template_file = "extract_main_topic_template.j2"
 
     def __init__(self):
         self._ollama_client = AsyncClient()
-        self._prompt_template = Template(
-            ("Extract the main idea of the following document:" "\n" "    $document")
+        self._prompt_template = MainTopicExtractor._env.get_template(
+            MainTopicExtractor._prompt_template_file
         )
 
     async def run(self, document: Document) -> Topic:
-        prompt = self._prompt_template.substitute(
+        prompt = self._prompt_template.render(
             {
                 "document": document.content,
             }
@@ -119,22 +118,17 @@ class TopicBasedJudge(ABC):
 
 
 class TopicBasedCompletenessJudge(TopicBasedJudge):
+    _env = Environment(loader=FileSystemLoader("prompts/templates"))
+    _prompt_template_file = "judge_report_completeness_template.j2"
 
     def __init__(self):
         self._ollama_client = AsyncClient()
-        self._prompt_template = Template(
-            "Read the following summarization report:"
-            "\n"
-            "    $report"
-            "\n"
-            "Check if the summarization report above covers the following "
-            "topic:"
-            "\n"
-            "    $topic"
+        self._prompt_template = TopicBasedCompletenessJudge._env.get_template(
+            TopicBasedCompletenessJudge._prompt_template_file
         )
 
     async def run(self, topic: Topic, report: Report) -> Judgement:
-        prompt = self._prompt_template.substitute(
+        prompt = self._prompt_template.render(
             {
                 "report": report.content,
                 "topic": topic.content,

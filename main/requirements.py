@@ -129,8 +129,11 @@ class DoubleNewlineDelimiterRequirement(Requirement):
     def __init__(self):
         super().__init__()
         self._name = "Double-Newline-As-Paragraph-Delimiter-Requirement"
-        self._paragraph_delimiter = "\n\n"
-        self._description = f'Use "{self._paragraph_delimiter}" as the delimiter to separate paragraphs;'
+        self._paragraph_delimiter = "\\n\\n"
+        self._description = (
+            f'Use "{self._paragraph_delimiter}" as the delimiter to separate '
+            f"paragraphs;"
+        )
 
     @property
     def name(self) -> str:

@@ -2,8 +2,8 @@
 
 import inspect
 from abc import ABC, abstractmethod
-from string import Template
 
+from jinja2 import Environment, FileSystemLoader
 from ollama import AsyncClient
 
 from main.customized_exceptions import (
@@ -31,19 +31,15 @@ class AbstractSummarizer(ABC):
 
 
 class BestHitLLMSummarizer(AbstractSummarizer):
-    _prompt_prefix_template = Template(
-        "Summarize the following document:"
-        "\n"
-        "    $document"
-        "\n"
-        "Requirements include:"
-        "\n"
-        "    $requirements"
-    )
+    _env = Environment(loader=FileSystemLoader("prompts/templates"))
+    _prompt_template_file = "summarize_document_template.j2"
 
     def __init__(self, num_tries: int = 3):
         self._num_tries = num_tries
         self._ollama_client = AsyncClient()
+        self._prompt_template = BestHitLLMSummarizer._env.get_template(
+            BestHitLLMSummarizer._prompt_template_file
+        )
 
     async def summarize(self, document: Document) -> Report:
         # Define requirements which should be satisfied
@@ -70,17 +66,14 @@ class BestHitLLMSummarizer(AbstractSummarizer):
         for requirement in all_requirements:
             descriptions_in_all_requirements.append(requirement.description)
 
-        req_desc_as_text = "\n".join(
-            f"    - {desc}" for desc in descriptions_in_all_requirements
-        )
-
         # Build the prompt
-        prompt = self._prompt_prefix_template.substitute(
+        prompt = self._prompt_template.render(
             {
                 "document": document.content,
-                "requirements": req_desc_as_text,
+                "requirements": descriptions_in_all_requirements,
             }
         )
+
         messages = [
             {"role": "system", "content": "You are a helpful assistant"},
             {"role": "user", "content": f"{prompt}"},
@@ -100,6 +93,7 @@ class BestHitLLMSummarizer(AbstractSummarizer):
                 pass
             else:
                 report = Report.model_validate_json(response.message.content)
+                print("report:", report)
                 reports.append(report)
 
         valid_reports = []
