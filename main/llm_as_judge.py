@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 
 from jinja2 import Environment, FileSystemLoader
-from ollama import AsyncClient
+from openai import AsyncOpenAI
 from pydantic import BaseModel, Field
 
 from main.document import Document
@@ -49,8 +49,11 @@ class ReferenceBasedCorrectnessJudge(ReferenceBasedJudge):
     _env = Environment(loader=FileSystemLoader("prompts/templates"))
     _prompt_template_file = "judge_statement_correctness_template.j2"
 
-    def __init__(self):
-        self._ollama_client = AsyncClient()
+    def __init__(self,
+                 client: AsyncOpenAI,
+                 model: str):
+        self._llm_api_client = client
+        self._model = model
         self._prompt_template = ReferenceBasedCorrectnessJudge._env.get_template(
             ReferenceBasedCorrectnessJudge._prompt_template_file
         )
@@ -63,16 +66,16 @@ class ReferenceBasedCorrectnessJudge(ReferenceBasedJudge):
             }
         )
 
-        response = await self._ollama_client.chat(
-            model="deepseek-r1:8b",
+        response = await self._llm_api_client.beta.chat.completions.parse(
+            model=self._model,
             messages=[
                 {"role": "system", "content": "You are a helpful assistant"},
                 {"role": "user", "content": f"{prompt}"},
             ],
-            format=Judgement.model_json_schema(),
+            response_format=Judgement,
         )
 
-        judgement = Judgement.model_validate_json(response.message.content)
+        judgement = Judgement.model_validate_json(response.choices[0].message.content)
         return judgement
 
 
@@ -84,8 +87,11 @@ class MainTopicExtractor:
     _env = Environment(loader=FileSystemLoader("prompts/templates"))
     _prompt_template_file = "extract_main_topic_template.j2"
 
-    def __init__(self):
-        self._ollama_client = AsyncClient()
+    def __init__(self,
+                 client: AsyncOpenAI,
+                 model: str):
+        self._llm_api_client = client
+        self._model = model
         self._prompt_template = MainTopicExtractor._env.get_template(
             MainTopicExtractor._prompt_template_file
         )
@@ -97,16 +103,16 @@ class MainTopicExtractor:
             }
         )
 
-        response = await self._ollama_client.chat(
-            model="deepseek-r1:8b",
+        response = await self._llm_api_client.beta.chat.completions.parse(
+            model=self._model,
             messages=[
                 {"role": "system", "content": "You are a helpful assistant"},
                 {"role": "user", "content": f"{prompt}"},
             ],
-            format=Topic.model_json_schema(),
+            response_format=Topic,
         )
 
-        main_topic = Topic.model_validate_json(response.message.content)
+        main_topic = Topic.model_validate_json(response.choices[0].message.content)
         return main_topic
 
 
@@ -121,8 +127,11 @@ class TopicBasedCompletenessJudge(TopicBasedJudge):
     _env = Environment(loader=FileSystemLoader("prompts/templates"))
     _prompt_template_file = "judge_report_completeness_template.j2"
 
-    def __init__(self):
-        self._ollama_client = AsyncClient()
+    def __init__(self,
+                 client: AsyncOpenAI,
+                 model: str):
+        self._llm_api_client = client
+        self._model = model
         self._prompt_template = TopicBasedCompletenessJudge._env.get_template(
             TopicBasedCompletenessJudge._prompt_template_file
         )
@@ -135,14 +144,14 @@ class TopicBasedCompletenessJudge(TopicBasedJudge):
             }
         )
 
-        response = await self._ollama_client.chat(
-            model="deepseek-r1:8b",
+        response = await self._llm_api_client.beta.chat.completions.parse(
+            model=self._model,
             messages=[
                 {"role": "system", "content": "You are a helpful assistant"},
                 {"role": "user", "content": f"{prompt}"},
             ],
-            format=Judgement.model_json_schema(),
+            response_format=Judgement,
         )
 
-        judgement = Judgement.model_validate_json(response.message.content)
+        judgement = Judgement.model_validate_json(response.choices[0].message.content)
         return judgement
