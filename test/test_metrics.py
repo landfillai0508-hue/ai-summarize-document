@@ -1,15 +1,20 @@
 import asyncio
 import unittest
+
 from openai import AsyncOpenAI
 
 from main.llm_as_judge import Reference
-from main.metrics import (BertScoreMetricExtractor,
-                          CompletenessMetricExtractor,
-                          CorrectnessMetricExtractor, HasTitleMetricExtractor,
-                          Metric, NumberOfParagraphMetricExtractor,
-                          NumberOfTokenMetricExtractor,
-                          RougeScoreMetricExtractor,
-                          TitleLengthMetricExtractor)
+from main.metrics import (
+    BertScoreMetricExtractor,
+    CompletenessMetricExtractor,
+    CorrectnessMetricExtractor,
+    HasTitleMetricExtractor,
+    Metric,
+    NumberOfParagraphMetricExtractor,
+    NumberOfTokenMetricExtractor,
+    RougeScoreMetricExtractor,
+    TitleLengthMetricExtractor,
+)
 from main.report import Report
 
 
@@ -145,10 +150,7 @@ class TestRougeScoreMetricExtractor(unittest.TestCase):
 class TestCorrectnessMetricExtractor(unittest.TestCase):
 
     def setUp(self) -> None:
-        client = AsyncOpenAI(
-            base_url="http://localhost:11434/v1",
-            api_key="dummy_key"
-        )
+        client = AsyncOpenAI(base_url="http://localhost:11434/v1", api_key="dummy_key")
         self.report = Report(
             title="UCLA",
             content="UCLA is a public university",
@@ -161,9 +163,9 @@ class TestCorrectnessMetricExtractor(unittest.TestCase):
             "consistently ranking among the top public universities nationally."
         )
 
-        self.metric_extractor = CorrectnessMetricExtractor(client=client,
-                                                           model="deepseek-r1:8b",
-                                                           reference=self.reference)
+        self.metric_extractor = CorrectnessMetricExtractor(
+            client=client, model="deepseek-r1:8b", reference=self.reference
+        )
 
     def test_extract(self) -> None:
         correctness_metric = asyncio.run(
@@ -176,10 +178,7 @@ class TestCorrectnessMetricExtractor(unittest.TestCase):
 class TestCompletenessMetricExtractor(unittest.TestCase):
 
     def setUp(self) -> None:
-        client = AsyncOpenAI(
-            base_url="http://localhost:11434/v1",
-            api_key="dummy_key"
-        )
+        client = AsyncOpenAI(base_url="http://localhost:11434/v1", api_key="dummy_key")
         self.report = Report(
             title="UCLA",
             content="UCLA (University of California, Los Angeles) is a large, "
@@ -196,9 +195,9 @@ class TestCompletenessMetricExtractor(unittest.TestCase):
             "consistently ranking among the top public universities nationally."
         )
 
-        self.metric_extractor = CompletenessMetricExtractor(client=client,
-                                                            model="deepseek-r1:8b",
-                                                            reference=self.reference)
+        self.metric_extractor = CompletenessMetricExtractor(
+            client=client, model="deepseek-r1:8b", reference=self.reference
+        )
 
     def test_extract(self) -> None:
         completeness_metric = asyncio.run(

@@ -36,11 +36,13 @@ class BestHitLLMSummarizer(AbstractSummarizer):
     _env = Environment(loader=FileSystemLoader("prompts/templates"))
     _prompt_template_file = "summarize_document_template.j2"
 
-    def __init__(self,
-                 client: AsyncOpenAI,
-                 model: str,
-                 num_tries: int = 5,
-                 llm_as_judge: bool = False):
+    def __init__(
+        self,
+        client: AsyncOpenAI,
+        model: str,
+        num_tries: int = 5,
+        llm_as_judge: bool = False,
+    ):
         self._num_tries = num_tries
         self._llm_as_judge = llm_as_judge
         self._model = model
@@ -68,13 +70,18 @@ class BestHitLLMSummarizer(AbstractSummarizer):
         if self._llm_as_judge:
             all_requirements.extend(
                 [
-                    CorrectnessRequirement(client=self._llm_api_client,
-                                           model=self._model,
-                                           org_document=document, must_be_satisfied=True),
-                    CompletenessRequirement(client=self._llm_api_client,
-                                            model=self._model,
-                                            org_document=document,
-                                            must_be_satisfied=True),
+                    CorrectnessRequirement(
+                        client=self._llm_api_client,
+                        model=self._model,
+                        org_document=document,
+                        must_be_satisfied=True,
+                    ),
+                    CompletenessRequirement(
+                        client=self._llm_api_client,
+                        model=self._model,
+                        org_document=document,
+                        must_be_satisfied=True,
+                    ),
                 ]
             )
 

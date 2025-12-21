@@ -1,6 +1,7 @@
 """requirements module"""
 
 from abc import ABC, abstractmethod
+
 from openai import AsyncOpenAI
 
 from main.document import Document
@@ -243,11 +244,13 @@ class NumberOfTokenRequirement(Requirement):
 
 class CorrectnessRequirement(Requirement):
 
-    def __init__(self,
-                 client: AsyncOpenAI,
-                 model: str,
-                 org_document: Document,
-                 must_be_satisfied: bool = False):
+    def __init__(
+        self,
+        client: AsyncOpenAI,
+        model: str,
+        org_document: Document,
+        must_be_satisfied: bool = False,
+    ):
         self._llm_api_client = client
         self._model = model
         self._must_be_satisfied = must_be_satisfied
@@ -257,9 +260,9 @@ class CorrectnessRequirement(Requirement):
             "adding personal opinions;"
         )
         self._reference = Reference(content=org_document.content)
-        self._metric_extractor = CorrectnessMetricExtractor(client=self._llm_api_client,
-                                                            model=self._model,
-                                                            reference=self._reference)
+        self._metric_extractor = CorrectnessMetricExtractor(
+            client=self._llm_api_client, model=self._model, reference=self._reference
+        )
 
     @property
     def name(self) -> str:
@@ -284,20 +287,22 @@ class CorrectnessRequirement(Requirement):
 
 class CompletenessRequirement(Requirement):
 
-    def __init__(self,
-                 client: AsyncOpenAI,
-                 model: str,
-                 org_document: Document,
-                 must_be_satisfied: bool = False):
+    def __init__(
+        self,
+        client: AsyncOpenAI,
+        model: str,
+        org_document: Document,
+        must_be_satisfied: bool = False,
+    ):
         self._llm_api_client = client
         self._model = model
         self._must_be_satisfied = must_be_satisfied
         self._name = "Correctness-Requirement"
         self._description = "Ensure the summary cover the main idea of the document;"
         self._reference = Reference(content=org_document.content)
-        self._metric_extractor = CompletenessMetricExtractor(client=self._llm_api_client,
-                                                             model=self._model,
-                                                             reference=self._reference)
+        self._metric_extractor = CompletenessMetricExtractor(
+            client=self._llm_api_client, model=self._model, reference=self._reference
+        )
 
     @property
     def name(self) -> str:

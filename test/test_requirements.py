@@ -3,12 +3,15 @@ import unittest
 
 from main.document import Document
 from main.report import Report
-from main.requirements import (CompletenessRequirement, CorrectnessRequirement,
-                               DoubleNewlineDelimiterRequirement,
-                               HasTitleRequirement,
-                               NumberOfParagraphRequirement,
-                               NumberOfTokenRequirement,
-                               TitleLengthRequirement)
+from main.requirements import (
+    CompletenessRequirement,
+    CorrectnessRequirement,
+    DoubleNewlineDelimiterRequirement,
+    HasTitleRequirement,
+    NumberOfParagraphRequirement,
+    NumberOfTokenRequirement,
+    TitleLengthRequirement,
+)
 
 
 class TestHasTitleRequirement(unittest.TestCase):
