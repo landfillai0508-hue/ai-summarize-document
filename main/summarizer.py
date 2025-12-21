@@ -4,7 +4,7 @@ import inspect
 from abc import ABC, abstractmethod
 
 from jinja2 import Environment, FileSystemLoader
-from ollama import AsyncClient
+from openai import AsyncOpenAI
 
 from main.customized_exceptions import (
     LargeLanguageAPIError,
@@ -36,10 +36,15 @@ class BestHitLLMSummarizer(AbstractSummarizer):
     _env = Environment(loader=FileSystemLoader("prompts/templates"))
     _prompt_template_file = "summarize_document_template.j2"
 
-    def __init__(self, num_tries: int = 10, llm_as_judge: bool = False):
+    def __init__(self,
+                 client: AsyncOpenAI,
+                 model: str,
+                 num_tries: int = 5,
+                 llm_as_judge: bool = False):
         self._num_tries = num_tries
         self._llm_as_judge = llm_as_judge
-        self._ollama_client = AsyncClient()
+        self._model = model
+        self._llm_api_client = client
         self._prompt_template = BestHitLLMSummarizer._env.get_template(
             BestHitLLMSummarizer._prompt_template_file
         )
@@ -63,12 +68,13 @@ class BestHitLLMSummarizer(AbstractSummarizer):
         if self._llm_as_judge:
             all_requirements.extend(
                 [
-                    CorrectnessRequirement(
-                        org_document=document, must_be_satisfied=True
-                    ),
-                    CompletenessRequirement(
-                        org_document=document, must_be_satisfied=True
-                    ),
+                    CorrectnessRequirement(client=self._llm_api_client,
+                                           model=self._model,
+                                           org_document=document, must_be_satisfied=True),
+                    CompletenessRequirement(client=self._llm_api_client,
+                                            model=self._model,
+                                            org_document=document,
+                                            must_be_satisfied=True),
                 ]
             )
 
@@ -103,15 +109,15 @@ class BestHitLLMSummarizer(AbstractSummarizer):
         for iteration in range(self._num_tries):
             print(f"Summarize at iteration {iteration}")
             try:
-                response = await self._ollama_client.chat(
-                    model="deepseek-r1:8b",
+                response = await self._llm_api_client.beta.chat.completions.parse(
+                    model=self._model,
                     messages=messages,
-                    format=Report.model_json_schema(),
+                    response_format=Report,
                 )
-            except Exception as _:
-                pass
+            except Exception as e:
+                print(e)
             else:
-                report = Report.model_validate_json(response.message.content)
+                report = Report.model_validate_json(response.choices[0].message.content)
                 reports.append(report)
 
         valid_reports = []
