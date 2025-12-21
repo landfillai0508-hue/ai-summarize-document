@@ -93,7 +93,6 @@ class BestHitLLMSummarizer(AbstractSummarizer):
                 pass
             else:
                 report = Report.model_validate_json(response.message.content)
-                print("report:", report)
                 reports.append(report)
 
         valid_reports = []

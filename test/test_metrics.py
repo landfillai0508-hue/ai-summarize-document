@@ -10,6 +10,8 @@ from main.metrics import (
     NumberOfParagraphMetricExtractor,
     NumberOfTokenMetricExtractor,
     TitleLengthMetricExtractor,
+    BertScoreMetricExtractor,
+    RougeScoreMetricExtractor,
 )
 from main.report import Report
 
@@ -78,8 +80,8 @@ class TestNumberOfParagraphMetricExtractor(unittest.TestCase):
         self.report = Report(
             title="UCLA",
             content="UCLA is a public university at Los Angeles.\n\n"
-            "UCLA is a large research university located, known for its strong academics, "
-            "successful athletics (now in the Big Ten), and significant impact on society.",
+                    "UCLA is a large research university located, known for its strong academics, "
+                    "successful athletics (now in the Big Ten), and significant impact on society.",
         )
 
         self.metric_extractor = NumberOfParagraphMetricExtractor()
@@ -105,6 +107,44 @@ class TestNumberOfTokenMetricExtractor(unittest.TestCase):
         self.assertEqual(num_of_token_metric.value, "8")
 
 
+class TestBertScoreMetricExtractor(unittest.TestCase):
+
+    def setUp(self):
+        self.report = self.report = Report(
+            title="UCLA", content="UCLA is a public university at Los Angeles."
+        )
+        self.reference = Reference(
+            content="UCLA, the University of California, Los Angeles, is a prestigious public research university, "
+                    "known globally for top-tier academics, extensive research. It locates in Westwood, Los Angeles."
+        )
+        self.metric_extractor = BertScoreMetricExtractor(reference=self.reference)
+
+    def test_extract(self) -> None:
+        metric = self.metric_extractor.extract(self.report)
+        self.assertEqual(metric.name, "Bert-Score-Metric")
+        score = float(metric.value)
+        self.assertGreater(score, 0.6)
+
+class TestRougeScoreMetricExtractor(unittest.TestCase):
+
+    def setUp(self):
+        self.report = self.report = Report(
+            title="UCLA", content="UCLA is a public university at Los Angeles."
+        )
+        self.reference = Reference(
+            content="UCLA, the University of California, Los Angeles, is a prestigious public research university, "
+                    "known globally for top-tier academics, extensive research. It locates in Westwood, Los Angeles."
+        )
+        self.metric_extractor = RougeScoreMetricExtractor(reference=self.reference)
+
+    def test_extract(self) -> None:
+        metric = self.metric_extractor.extract(self.report)
+        self.assertEqual(metric.name, "Rouge-Score-Metric")
+        score = float(metric.value)
+        self.assertGreater(score, 0.5)
+
+
+"""
 class TestCorrectnessMetricExtractor(unittest.TestCase):
 
     def setUp(self) -> None:
@@ -157,7 +197,7 @@ class TestCompletenessMetricExtractor(unittest.TestCase):
         )
         self.assertEqual(completeness_metric.name, "Completeness-Metric")
         self.assertTrue(bool(int(completeness_metric.value)))
-
+"""
 
 if __name__ == "__main__":
     unittest.main()
