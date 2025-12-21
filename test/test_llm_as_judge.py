@@ -3,15 +3,9 @@ import unittest
 from unittest.mock import patch
 
 from main.document import Document
-from main.llm_as_judge import (
-    Judgement,
-    MainTopicExtractor,
-    Reference,
-    ReferenceBasedCorrectnessJudge,
-    Statement,
-    Topic,
-    TopicBasedCompletenessJudge,
-)
+from main.llm_as_judge import (Judgement, MainTopicExtractor, Reference,
+                               ReferenceBasedCorrectnessJudge, Statement,
+                               Topic, TopicBasedCompletenessJudge)
 from main.report import Report
 
 

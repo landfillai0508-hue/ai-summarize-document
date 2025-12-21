@@ -28,6 +28,7 @@ __all__ = [
     "CorrectnessMetricExtractor",
     "CompletenessMetricExtractor",
     "BertScoreMetricExtractor",
+    "RougeScoreMetricExtractor",
 ]
 
 
