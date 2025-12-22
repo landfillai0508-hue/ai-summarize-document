@@ -178,6 +178,8 @@ class BestHitLLMSummarizer(AbstractSummarizer):
             if satisfy_all_must_requirements:
                 valid_reports.append(report)
 
+        print(f"Number of valid reports: {len(valid_reports)}")
+
         if not valid_reports:
             raise NoReportSatisfyAllMustRequirements()
 
@@ -189,8 +191,12 @@ class BestHitLLMSummarizer(AbstractSummarizer):
                 score = scorer.extract(report=report)
                 scores.append(float(score.value))
 
+            print(
+                f"Valid report {idx+1}; Bert-Score-F1: {scores[0]}; Roger-Score-F1: {scores[1]}"
+            )
             cur_report_score = sum(scores)  # sum scores of all scorers
             if cur_report_score > best_report_score:
+                best_report_score = cur_report_score
                 best_report_id = idx
 
         return valid_reports[best_report_id]
