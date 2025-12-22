@@ -1,4 +1,5 @@
 """llm_as_judge."""
+
 import os
 from abc import ABC, abstractmethod
 
@@ -21,7 +22,7 @@ __all__ = [
 ]
 
 ABSOLUTE_PATH = os.path.dirname(__file__)
-ROOT_SOURCE_PATH = '/'.join(ABSOLUTE_PATH.split('/')[:-1])
+ROOT_SOURCE_PATH = "/".join(ABSOLUTE_PATH.split("/")[:-1])
 
 
 class Judgement(BaseModel):
