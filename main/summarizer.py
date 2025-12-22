@@ -1,6 +1,7 @@
 """summarize document."""
-import os
+
 import inspect
+import os
 from abc import ABC, abstractmethod
 
 from jinja2 import Environment, FileSystemLoader
@@ -25,7 +26,7 @@ from main.requirements import (
 )
 
 ABSOLUTE_PATH = os.path.dirname(__file__)
-ROOT_SOURCE_PATH = '/'.join(ABSOLUTE_PATH.split('/')[:-1])
+ROOT_SOURCE_PATH = "/".join(ABSOLUTE_PATH.split("/")[:-1])
 
 
 class AbstractSummarizer(ABC):
@@ -40,17 +41,17 @@ class BestHitLLMSummarizer(AbstractSummarizer):
     _prompt_template_file = "summarize_document_template.j2"
 
     def __init__(
-            self,
-            client: AsyncOpenAI,
-            model: str,
-            has_title: bool = True,
-            min_num_of_char_in_title: int = 5,
-            max_num_of_char_in_title: int = 50,
-            min_num_of_paragraph: int = 2,
-            max_num_of_paragraph: int = 4,
-            compression_rate: float = 0.2,
-            num_tries: int = 5,
-            llm_as_judge: bool = False,
+        self,
+        client: AsyncOpenAI,
+        model: str,
+        has_title: bool = True,
+        min_num_of_char_in_title: int = 5,
+        max_num_of_char_in_title: int = 50,
+        min_num_of_paragraph: int = 2,
+        max_num_of_paragraph: int = 4,
+        compression_rate: float = 0.2,
+        num_tries: int = 5,
+        llm_as_judge: bool = False,
     ):
         self._llm_api_client = client
         self._model = model
@@ -79,7 +80,8 @@ class BestHitLLMSummarizer(AbstractSummarizer):
                         max_num_of_char=self._max_num_of_char_in_title,
                         must_be_satisfied=True,
                     ),
-                ])
+                ]
+            )
 
         all_requirements.extend(
             [
