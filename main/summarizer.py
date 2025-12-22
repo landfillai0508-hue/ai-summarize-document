@@ -40,32 +40,60 @@ class BestHitLLMSummarizer(AbstractSummarizer):
         self,
         client: AsyncOpenAI,
         model: str,
+        has_title: bool = True,
+        min_num_of_char_in_title: int = 5,
+        max_num_of_char_in_title: int = 50,
+        min_num_of_paragraph: int = 2,
+        max_num_of_paragraph: int = 4,
+        compression_rate: float = 0.2,
         num_tries: int = 5,
         llm_as_judge: bool = False,
     ):
+        self._llm_api_client = client
+        self._model = model
+        self._has_title = has_title
+        self._min_num_of_char_in_title = min_num_of_char_in_title
+        self._max_num_of_char_in_title = max_num_of_char_in_title
+        self._min_num_of_paragraph = min_num_of_paragraph
+        self._max_num_of_paragraph = max_num_of_paragraph
+        self._compression_rate = compression_rate
         self._num_tries = num_tries
         self._llm_as_judge = llm_as_judge
-        self._model = model
-        self._llm_api_client = client
         self._prompt_template = BestHitLLMSummarizer._env.get_template(
             BestHitLLMSummarizer._prompt_template_file
         )
 
     async def summarize(self, document: Document) -> Report:
+        num_of_token = len([_ for _ in document.content.split() if _.strip()])
         # Define requirements which should be satisfied
-        all_requirements = [
-            HasTitleRequirement(must_be_satisfied=True),
-            TitleLengthRequirement(
-                min_num_of_char=5, max_num_of_char=80, must_be_satisfied=True
-            ),
-            DoubleNewlineDelimiterRequirement(),
-            NumberOfParagraphRequirement(
-                min_num_of_paragraph=2, max_num_of_paragraph=4, must_be_satisfied=True
-            ),
-            NumberOfTokenRequirement(
-                min_num_of_token=100, max_num_of_token=250, must_be_satisfied=True
-            ),
-        ]
+        all_requirements = []
+        if self._has_title:
+            all_requirements.append(HasTitleRequirement(must_be_satisfied=True))
+
+        all_requirements.extend(
+            [
+                TitleLengthRequirement(
+                    min_num_of_char=self._min_num_of_char_in_title,
+                    max_num_of_char=self._max_num_of_char_in_title,
+                    must_be_satisfied=True,
+                ),
+                DoubleNewlineDelimiterRequirement(),
+                NumberOfParagraphRequirement(
+                    min_num_of_paragraph=self._min_num_of_paragraph,
+                    max_num_of_paragraph=self._max_num_of_paragraph,
+                    must_be_satisfied=True,
+                ),
+                NumberOfTokenRequirement(
+                    min_num_of_token=int(
+                        max(self._compression_rate - 0.05, 0.1) * num_of_token
+                    ),
+                    max_num_of_token=int(
+                        min(self._compression_rate + 0.05, 0.9) * num_of_token
+                    ),
+                    must_be_satisfied=True,
+                ),
+            ]
+        )
 
         if self._llm_as_judge:
             all_requirements.extend(
