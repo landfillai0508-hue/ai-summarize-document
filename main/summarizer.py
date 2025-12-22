@@ -1,5 +1,5 @@
 """summarize document."""
-
+import os
 import inspect
 from abc import ABC, abstractmethod
 
@@ -24,6 +24,9 @@ from main.requirements import (
     TitleLengthRequirement,
 )
 
+ABSOLUTE_PATH = os.path.dirname(__file__)
+ROOT_SOURCE_PATH = '/'.join(ABSOLUTE_PATH.split('/')[:-1])
+
 
 class AbstractSummarizer(ABC):
 
@@ -33,21 +36,21 @@ class AbstractSummarizer(ABC):
 
 
 class BestHitLLMSummarizer(AbstractSummarizer):
-    _env = Environment(loader=FileSystemLoader("prompts/templates"))
+    _env = Environment(loader=FileSystemLoader(f"{ROOT_SOURCE_PATH}/prompts/templates"))
     _prompt_template_file = "summarize_document_template.j2"
 
     def __init__(
-        self,
-        client: AsyncOpenAI,
-        model: str,
-        has_title: bool = True,
-        min_num_of_char_in_title: int = 5,
-        max_num_of_char_in_title: int = 50,
-        min_num_of_paragraph: int = 2,
-        max_num_of_paragraph: int = 4,
-        compression_rate: float = 0.2,
-        num_tries: int = 5,
-        llm_as_judge: bool = False,
+            self,
+            client: AsyncOpenAI,
+            model: str,
+            has_title: bool = True,
+            min_num_of_char_in_title: int = 5,
+            max_num_of_char_in_title: int = 50,
+            min_num_of_paragraph: int = 2,
+            max_num_of_paragraph: int = 4,
+            compression_rate: float = 0.2,
+            num_tries: int = 5,
+            llm_as_judge: bool = False,
     ):
         self._llm_api_client = client
         self._model = model
@@ -68,15 +71,18 @@ class BestHitLLMSummarizer(AbstractSummarizer):
         # Define requirements which should be satisfied
         all_requirements = []
         if self._has_title:
-            all_requirements.append(HasTitleRequirement(must_be_satisfied=True))
+            all_requirements.extend(
+                [
+                    HasTitleRequirement(must_be_satisfied=True),
+                    TitleLengthRequirement(
+                        min_num_of_char=self._min_num_of_char_in_title,
+                        max_num_of_char=self._max_num_of_char_in_title,
+                        must_be_satisfied=True,
+                    ),
+                ])
 
         all_requirements.extend(
             [
-                TitleLengthRequirement(
-                    min_num_of_char=self._min_num_of_char_in_title,
-                    max_num_of_char=self._max_num_of_char_in_title,
-                    must_be_satisfied=True,
-                ),
                 DoubleNewlineDelimiterRequirement(),
                 NumberOfParagraphRequirement(
                     min_num_of_paragraph=self._min_num_of_paragraph,
@@ -155,6 +161,9 @@ class BestHitLLMSummarizer(AbstractSummarizer):
                 report = Report.model_validate_json(response.choices[0].message.content)
                 reports.append(report)
 
+        if not reports:
+            raise LargeLanguageAPIError()
+
         valid_reports = []
         for report in reports:
             satisfy_all_must_requirements = []
@@ -166,9 +175,6 @@ class BestHitLLMSummarizer(AbstractSummarizer):
 
             if satisfy_all_must_requirements:
                 valid_reports.append(report)
-
-        if not reports:
-            raise LargeLanguageAPIError()
 
         if not valid_reports:
             raise NoReportSatisfyAllMustRequirements()

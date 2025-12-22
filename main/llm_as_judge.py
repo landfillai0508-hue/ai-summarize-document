@@ -1,5 +1,5 @@
 """llm_as_judge."""
-
+import os
 from abc import ABC, abstractmethod
 
 from jinja2 import Environment, FileSystemLoader
@@ -19,6 +19,9 @@ __all__ = [
     "MainTopicExtractor",
     "TopicBasedCompletenessJudge",
 ]
+
+ABSOLUTE_PATH = os.path.dirname(__file__)
+ROOT_SOURCE_PATH = '/'.join(ABSOLUTE_PATH.split('/')[:-1])
 
 
 class Judgement(BaseModel):
@@ -46,7 +49,7 @@ class ReferenceBasedJudge(ABC):
 class ReferenceBasedCorrectnessJudge(ReferenceBasedJudge):
     """Judge if a statement is True or False by a given reference."""
 
-    _env = Environment(loader=FileSystemLoader("prompts/templates"))
+    _env = Environment(loader=FileSystemLoader(f"{ROOT_SOURCE_PATH}/prompts/templates"))
     _prompt_template_file = "judge_statement_correctness_template.j2"
 
     def __init__(self, client: AsyncOpenAI, model: str):
@@ -82,7 +85,7 @@ class Topic(BaseModel):
 
 
 class MainTopicExtractor:
-    _env = Environment(loader=FileSystemLoader("prompts/templates"))
+    _env = Environment(loader=FileSystemLoader(f"{ROOT_SOURCE_PATH}/prompts/templates"))
     _prompt_template_file = "extract_main_topic_template.j2"
 
     def __init__(self, client: AsyncOpenAI, model: str):
@@ -120,7 +123,7 @@ class TopicBasedJudge(ABC):
 
 
 class TopicBasedCompletenessJudge(TopicBasedJudge):
-    _env = Environment(loader=FileSystemLoader("prompts/templates"))
+    _env = Environment(loader=FileSystemLoader(f"{ROOT_SOURCE_PATH}/prompts/templates"))
     _prompt_template_file = "judge_report_completeness_template.j2"
 
     def __init__(self, client: AsyncOpenAI, model: str):
