@@ -1,5 +1,7 @@
 # Document Summarizer
 
+![Demo UI](./data/demo.png)
+
 A lightweight Flask app that turns a text document into a concise summary using a language model.
 
 ---
