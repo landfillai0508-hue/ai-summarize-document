@@ -63,8 +63,6 @@ The defaults in `app.py` point to a local Ollama instance.
 poetry run python -m unittest
 ```
 
-The repository contains a single test that ensures `Document.load_from_local` and `Document.pprint` behave correctly.
-
 ---
 
 ## Extending
