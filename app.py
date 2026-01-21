@@ -39,13 +39,21 @@ _llm_client = AsyncOpenAI(base_url=OPENAI_BASE_URL, api_key=OPENAI_API_KEY)
 
 
 # ---------- Helper ------------------------------------------------------------
-async def _summarize_text(text: str) -> dict:
+async def _summarize_text(text: str,
+                          has_title: bool,
+                          num_paragraph: int,
+                          compression_rate: float) -> dict:
     """Summarize the given text using BestHitLLMSummarizer.
 
     Returns the report as a dict.
     """
     document = Document(content=text)
-    summarizer = BestHitLLMSummarizer(client=_llm_client, model=DEFAULT_MODEL)
+    summarizer = BestHitLLMSummarizer(client=_llm_client,
+                                      has_title=has_title,
+                                      min_num_of_paragraph=max(1, num_paragraph - 1),
+                                      max_num_of_paragraph=num_paragraph + 1,
+                                      compression_rate=compression_rate,
+                                      model=DEFAULT_MODEL)
     report = await summarizer.summarize(document=document)
     # The Report Pydantic model can be converted to a dict.
     return report.model_dump()
@@ -68,17 +76,18 @@ def summarize_route():
         if not data or "text" not in data:
             abort(400, description="JSON must contain 'text' field")
         text = data["text"]
-    elif request.content_type.startswith("multipart/form-data"):
-        file = request.files.get("file")
-        if not file:
-            abort(400, description="multipart/form-data must include 'file'")
-        text = file.read().decode("utf-8")
+        include_title = data["include_title"]
+        num_paragraph = data["num_paragraph"]
+        compression_rate = data["compression_rate"]
     else:
         abort(415, description="Unsupported media type")
 
     # Run the async summarizer in the event loop.
     try:
-        summary = asyncio.run(_summarize_text(text))
+        summary = asyncio.run(_summarize_text(text,
+                                              has_title=include_title,
+                                              num_paragraph=num_paragraph,
+                                              compression_rate=compression_rate))
     except Exception as exc:  # pragma: no cover - debugging
         abort(500, description=str(exc))
 
