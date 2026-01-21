@@ -17,11 +17,12 @@ setup you would configure the OpenAI client, model, and possibly add authenticat
 from __future__ import annotations
 
 import asyncio
-from flask import Flask, request, jsonify, abort, render_template
+
+from flask import Flask, abort, jsonify, render_template, request
+from openai import AsyncOpenAI
 
 from main.document import Document
 from main.summarizer import BestHitLLMSummarizer
-from openai import AsyncOpenAI
 
 # ---------- Configuration -----------------------------------------------------
 # Adjust these values as needed for your environment.
@@ -36,6 +37,7 @@ app = Flask(__name__)
 # In a real deployment you might use dependency injection.
 _llm_client = AsyncOpenAI(base_url=OPENAI_BASE_URL, api_key=OPENAI_API_KEY)
 
+
 # ---------- Helper ------------------------------------------------------------
 async def _summarize_text(text: str) -> dict:
     """Summarize the given text using BestHitLLMSummarizer.
@@ -48,10 +50,12 @@ async def _summarize_text(text: str) -> dict:
     # The Report Pydantic model can be converted to a dict.
     return report.model_dump()
 
+
 @app.route("/")
 def index():
     """Render the static HTML page."""
     return render_template("index.html")
+
 
 @app.route("/summarize", methods=["POST"])
 def summarize_route():
