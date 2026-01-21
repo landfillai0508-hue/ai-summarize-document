@@ -87,10 +87,18 @@
           summarizeBtn.disabled = true;
           messages.textContent = 'Summarizing document...';
           try {
+            const includeTitle = document.getElementById('includeTitle').checked;
+            const numParagraphs = parseInt(document.getElementById('numParagraphs').value, 10);
+            const compressionRate = parseFloat(document.getElementById('compressionRate').value);
             const resp = await fetch('/summarize', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ text: currentText })
+              body: JSON.stringify({
+                text: currentText,
+                include_title: includeTitle,
+                num_paragraph: numParagraphs,
+                compression_rate: compressionRate
+              })
             });
             if (!resp.ok) throw new Error(`Error ${resp.status}: ${resp.statusText}`);
             const data = await resp.json();
